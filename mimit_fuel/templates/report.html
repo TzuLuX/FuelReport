@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<meta name="description" content="Statistiche degli andamenti dei prezzi dei carburanti in Italia elaborate dagli open data del MIMIT, con mappa interattiva OpenStreetMap.">
+__LEAFLET_CSS__
+<style>
+__REPORT_CSS__
+</style>
+</head>
+<body>
+<div class="loadbar" id="loadbar" role="progressbar" aria-label="Caricamento dei dati" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+  <div class="loadbar-fill" id="loadbar-fill"></div>
+  <span class="loadbar-text" id="loadbar-text">caricamento dei dati (__DATA_SIZE__)…</span>
+</div>
+<script>
+/* I blocchi di dati arrivano a pezzi, ciascuno seguito da __loaded(): la barra segue il
+ * download della pagina e l'app sa quando un blocco è completo. */
+window.__blocks = {};
+function __loaded(fraction, block) {
+  var pct = Math.round(fraction * 100);
+  var bar = document.getElementById('loadbar');
+  document.getElementById('loadbar-fill').style.width = pct + '%';
+  bar.setAttribute('aria-valuenow', pct);
+  document.getElementById('loadbar-text').textContent = (window.__blocks.core
+    ? 'caricamento del dettaglio di province, comuni e impianti'
+    : 'caricamento dei dati (__DATA_SIZE__)') + ': ' + pct + '%';
+  if (block) {
+    window.__blocks[block] = true;
+    document.dispatchEvent(new CustomEvent('report-block', { detail: block }));
+  }
+  if (fraction >= 1) bar.hidden = true;
+}
+</script>
+<header class="top">
+  <div class="head-row">
+    <div>
+      <h1>Prezzi dei carburanti in Italia</h1>
+      <p class="sub">
+        Report generato automaticamente dagli <a href="__SOURCE_URL__">open data del MIMIT</a>
+        (archivio storico dei prezzi praticati agli impianti di distribuzione).
+        Periodo analizzato: <b id="period-label"></b><span id="period-extra"></span>.
+      </p>
+    </div>
+    <div class="controls">
+      <label>Periodo
+        <select id="period-select"></select>
+      </label>
+      <label>Carburante
+        <select id="fuel-select"></select>
+      </label>
+      <label>Modalità di vendita
+        <select id="mode-select">
+          <option value="0" selected>servito</option>
+          <option value="1">self service</option>
+          <option value="2">entrambe (confronto)</option>
+        </select>
+      </label>
+      <label>Metrica della mappa
+        <select id="metric-select">
+          <option value="mean">prezzo medio del periodo</option>
+          <option value="last">ultimo prezzo disponibile</option>
+          <option value="delta">variazione nel periodo</option>
+          <option value="vs_country">scostamento dalla media nazionale</option>
+        </select>
+      </label>
+    </div>
+  </div>
+  <p class="sub" id="fuel-desc"></p>
+</header>
+
+<nav class="crumbs" id="crumbs" aria-label="Percorso geografico"></nav>
+
+<main>
+  <section class="kpis" id="kpis" aria-label="Indicatori principali"></section>
+
+  <section class="layout">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Mappa — drilldown geografico</h2>
+        <span class="hint" id="map-hint"></span>
+      </div>
+      <div id="map"></div>
+      <div class="panel-head">
+        <span class="hint" id="tiles-note"></span>
+        <label class="inline-control">sfondo
+          <select id="tiles-select" aria-label="Mappa di base"></select>
+        </label>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Andamento nel tempo</h2>
+        <span class="hint" id="trend-hint"></span>
+      </div>
+      <div class="chart-wrap" style="height:290px"><canvas id="chart-trend"></canvas></div>
+      <!-- sotto il grafico: il pulsante che compare non sposta il grafico mentre lo si usa -->
+      <div class="panel-head">
+        <span class="hint" id="zoom-hint">trascina sul grafico per ingrandire un intervallo · Maiusc + trascina per scorrere · Ctrl + rotella per lo zoom · doppio clic per tornare al periodo</span>
+        <button class="ghost" id="btn-zoom-reset" type="button" hidden>torna al periodo</button>
+      </div>
+      <div class="panel-head"><h2>Confronto tra aree</h2><span class="hint">prezzo medio del periodo</span></div>
+      <div class="chart-wrap" style="height:250px"><canvas id="chart-rank"></canvas></div>
+    </div>
+  </section>
+
+  <section class="layout">
+    <div class="panel">
+      <div class="panel-head"><h2>Stagionalità — medie mensili per anno</h2></div>
+      <div class="chart-wrap" style="height:250px"><canvas id="chart-season"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>Distribuzione dei prezzi medi</h2><span class="hint">tra le aree mostrate in classifica</span></div>
+      <div class="chart-wrap" style="height:250px"><canvas id="chart-dist"></canvas></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Riepilogo annuale</h2>
+    <div id="table-years"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Aree geografiche</h2>
+    <div id="table-areas"></div>
+  </section>
+
+  <section class="panel" id="panel-stations" hidden>
+    <h2>Impianti</h2>
+    <div id="table-stations"></div>
+  </section>
+
+  <footer>
+    <div id="meta-block">__META_HTML__</div>
+  </footer>
+</main>
+
+__LEAFLET_JS__
+__CHART_JS__
+__HAMMER_JS__
+__ZOOM_JS__
+__DATA_CORE__
+__DATA_BOUNDARIES__
+<script>
+window.__REPORT_CFG__ = __CFG__;
+</script>
+<script>
+__APP_JS__
+</script>
+__DATA_PROVINCES__
+__DATA_COMUNI__
+__DATA_STATIONS__
+</body>
+</html>

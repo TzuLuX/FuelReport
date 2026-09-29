@@ -1,0 +1,49 @@
+# Pubblicazione del report dietro Nginx Proxy Manager (rete esterna "mynet").
+# In NPM: proxy host verso http://fuelreport:80
+
+services:
+  # serve il report generato; nessuna porta esposta sull'host, ci arriva solo NPM
+  fuelreport:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - ./data/site:/usr/share/nginx/html:ro
+    networks:
+      - mynet
+
+  # rigenera il report ogni giorno alle 10, dopo la pubblicazione del feed MIMIT (~9:10)
+  fuelreport-updater:
+    image: python:3.13-slim
+    restart: unless-stopped
+    init: true
+    working_dir: /app
+    volumes:
+      - .:/app:ro
+      - ./data:/app/data
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"
+      # facoltativi, dal file .env accanto a questo: pubblicano il report anche su GitHub Pages
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_REPO: ${GITHUB_REPO:-}
+    # Il report (serie storica dal 2015) si genera a ogni avvio e poi ogni giorno; si scrive
+    # fuori da site/ e poi si sposta, così nginx non serve mai un file a metà.
+    command:
+      - sh
+      - -c
+      - |
+        publish() { [ -z "$$GITHUB_TOKEN" ] || python3 fuel_report.py publish data/site/index.html; }
+        report() { python3 fuel_report.py -q --from 2015Q1 -o data/report.html && mv data/report.html data/site/index.html && publish; }
+        mkdir -p data/site
+        report
+        while :; do
+          next=$$(date -d 'today 10:00' +%s)
+          [ "$$next" -gt "$$(date +%s)" ] || next=$$(date -d 'tomorrow 10:00' +%s)
+          echo "prossimo aggiornamento: $$(date -d @$$next)"
+          sleep $$((next - $$(date +%s)))
+          report
+        done
+
+networks:
+  mynet:
+    external: true

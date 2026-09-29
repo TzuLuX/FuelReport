@@ -1,0 +1,69 @@
+# ----------------------------------------------------------------------------------
+# Cache e dati scaricati dal tool (archivi MIMIT, aggregati, confini, librerie):
+# possono occupare diversi GB e sono sempre rigenerabili con `sync` / `report`.
+# ----------------------------------------------------------------------------------
+data/*
+!data/.gitkeep
+
+# ----------------------------------------------------------------------------------
+# Report generati (output del tool)
+# ----------------------------------------------------------------------------------
+/report_*.html
+/report.html
+/*.html
+!docs/**/*.html
+!mimit_fuel/templates/*.html
+
+# variabili di docker compose (contiene il token GitHub)
+.env
+
+# file temporanei dei download
+*.part
+*.tmp
+
+# ----------------------------------------------------------------------------------
+# Python
+# ----------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.python-version
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.hypothesis/
+
+# ----------------------------------------------------------------------------------
+# Editor e sistema operativo
+# ----------------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ----------------------------------------------------------------------------------
+# Log, dump di debug e output locali
+# ----------------------------------------------------------------------------------
+*.log
+dom_*.html
+shot_*.png
+!docs/screenshots/*.png
